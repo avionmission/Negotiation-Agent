@@ -10,8 +10,9 @@ router = APIRouter()
 
 @router.post("/suppliers", response_model=SupplierResponse)
 def create_supplier(data: SupplierCreate, db: Session = Depends(get_db)):
+    from app.models.supplier import Supplier
     repo = SupplierRepository(db)
-    supplier = SupplierCreate(**data.model_dump())
+    supplier = Supplier(**data.model_dump())
     return repo.add(supplier)
 
 

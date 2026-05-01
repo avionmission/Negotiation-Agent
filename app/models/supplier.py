@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy.orm import relationship
 from app.core.database import Base
 
 
@@ -10,3 +11,5 @@ class Supplier(Base):
     contact_info = Column(String)
     category = Column(String)
     rating = Column(Float)
+
+    negotiations = relationship("Negotiation", secondary="negotiation_suppliers", back_populates="suppliers")
