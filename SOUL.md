@@ -1,252 +1,206 @@
 
-You are an expert backend engineer. Generate a production-grade FastAPI project scaffold for an AI-powered procurement negotiation system.
+You are a senior backend engineer tasked with designing a production-grade scaffold for an agentic negotiation system.
 
-## Core Requirements
+## Objective
 
-* Backend framework: FastAPI
-* ORM: SQLAlchemy (sync version)
-* Database: SQLite
-* LLM integration: Gemini API (create placeholder client, no real API key)
-* Architecture: clean separation of concerns (routes, services, repositories, models, schemas)
+Explain the system clearly and generate a working backend scaffold using:
 
-## Project Structure
+* FastAPI (Python)
+* Gemini API (LLM integration)
+* SQLite (initial database, designed to be swappable with Postgres)
 
-Create the following directory and file structure:
+The scaffold must:
 
-app/
-├── main.py
-├── core/
-│   ├── config.py
-│   ├── database.py
-│
-├── models/
-│   ├── supplier.py
-│   ├── negotiation.py
-│   ├── message.py
-│   ├── offer.py
-│
-├── schemas/
-│   ├── supplier.py
-│   ├── negotiation.py
-│   ├── message.py
-│   ├── offer.py
-│
-├── repositories/
-│   ├── base.py
-│   ├── supplier_repo.py
-│   ├── negotiation_repo.py
-│   ├── message_repo.py
-│   ├── offer_repo.py
-│
-├── services/
-│   ├── gemini_client.py
-│   ├── negotiation_agent.py
-│
-├── api/
-│   ├── routes/
-│   │   ├── suppliers.py
-│   │   ├── negotiations.py
-│   │   ├── chat.py
-│
-├── utils/
-│   ├── prompt_builder.py
-│
-└── db/
-└── sqlite.db
+* Run immediately without errors
+* Include clear structure, typing, and separation of concerns
+* Allow easy extension of routes, services, and agent logic
 
 ---
 
-## Implementation Requirements
+## System Overview
 
-### 1. main.py
+We are building a **buyer-driven agentic negotiation platform**:
 
-* Initialize FastAPI app
-* Include all routers
-* Setup basic middleware (CORS enabled)
+### Core Concepts
 
----
+1. **Buyer**
 
-### 2. database.py
+   * Creates an "Agent" representing a procurement task
+   * Defines constraints: budget, requirements, deadline, pricing structure
+   * Invites suppliers via email
 
-* Create SQLAlchemy engine for SQLite
-* Define SessionLocal
-* Provide dependency: get_db()
+2. **Agent (Core System Actor)**
 
----
+   * Stateful entity
+   * Holds:
 
-### 3. Models (SQLAlchemy)
+     * Buyer preferences
+     * Constraints (budget, pricing breakdown, deadline)
+     * Knowledge base (optional context)
+   * Conducts negotiations autonomously via chat
+   * Generates:
 
-Define tables:
+     * Offers
+     * Counter-offers (bounded rounds)
+     * Summaries
 
-Supplier:
+3. **Supplier**
 
-* id (PK)
-* name
-* contact_info
-* category
-* rating
-
-Negotiation:
-
-* id
-* title
-* system_prompt
-* target_price
-* max_budget
-* status
-* created_at
-
-Message:
-
-* id
-* negotiation_id
-* supplier_id
-* sender ("agent" | "supplier")
-* content
-* timestamp
-
-Offer:
-
-* id
-* negotiation_id
-* supplier_id
-* price
-* terms
-* created_at
+   * Accesses system via secure tokenized link
+   * Only interacts through a chat interface with the agent
+   * Cannot see internal constraints or summaries
 
 ---
 
-### 4. Schemas (Pydantic, v2 style)
+## Functional Flow
 
-For each entity create:
+1. Buyer creates Agent
+2. Buyer adds Suppliers (email + secure link)
+3. Supplier accesses chat via token
+4. Agent:
 
-* Create schema
-* Response schema (with from_attributes = True)
+   * Sends initial offer
+   * Receives supplier response
+   * Evaluates using constraints + knowledge base
+   * Sends optimized counter-offer (max 2–3 rounds)
+5. Outcomes:
 
----
+   * Accept → generate deal summary → buyer approval → finalize
+   * Reject / no response → mark inactive
+   * Renegotiate loop (bounded)
+6. Buyer can:
 
-### 5. Repositories
-
-Implement repository pattern:
-
-BaseRepository:
-
-* add()
-* commit logic
-
-Each repo should:
-
-* encapsulate DB queries
-* avoid business logic
-
-Important methods:
-
-MessageRepository:
-
-* create_message()
-* get_history(limit=10)
-
-OfferRepository:
-
-* create_offer()
-* get_best_offer()
+   * View all chats
+   * View private summaries
 
 ---
 
-### 6. Services
+## Technical Requirements
 
-#### gemini_client.py
+### 1. Project Structure
 
-* Create class GeminiClient
-* Method: generate(prompt: str) → str
-* Return mock response for now (no real API call)
+Design a clean, production-ready layout, for example:
 
----
+* app/
 
-#### negotiation_agent.py
+  * main.py
+  * api/ (routers)
+  * core/ (config, settings)
+  * models/ (SQLAlchemy models)
+  * schemas/ (Pydantic)
+  * services/ (business logic, agent logic)
+  * db/ (session, base)
+  * integrations/
 
-* Class NegotiationAgent
-* Method: generate_reply()
-* Uses prompt_builder
-* No DB access inside this class
+    * gemini_client.py
+  * utils/
 
----
+Include:
 
-### 7. prompt_builder.py
-
-* Function build_prompt(system_prompt, negotiation, supplier, history)
-* Return formatted string
-
----
-
-### 8. API Routes
-
-#### suppliers.py
-
-* POST /suppliers
-* GET /suppliers
-
-#### negotiations.py
-
-* POST /negotiations
-* POST /negotiations/{id}/run
-
-#### chat.py
-
-* POST /chat/{negotiation_id}/{supplier_id}
-* Handles message loop:
-
-  * save supplier message
-  * generate AI reply
-  * save agent reply
+* Dependency injection
+* Environment-based config
+* Logging setup
 
 ---
 
-### 9. Dependency Injection
+### 2. Database Design (SQLite initially)
 
-* Use Depends(get_db)
-* Instantiate repositories inside routes
-* Pass repositories into services
+Define models for:
+
+* Buyer
+* Agent
+* Supplier
+* Conversation
+* Message
+* DealSummary
+
+Include:
+
+* Proper relationships
+* Timestamps
+* Status fields (e.g., ACTIVE, INACTIVE, ACCEPTED)
 
 ---
 
-### 10. Code Quality Constraints
+### 3. API Design (FastAPI)
 
-* Do NOT mix DB logic in routes
-* Do NOT call LLM inside routes directly
-* Use clear typing everywhere
-* Add docstrings to key classes/functions
-* Keep functions small and focused
+Create stubbed but working endpoints:
+
+* POST /agents
+* GET /agents/{id}
+* POST /agents/{id}/suppliers
+* GET /agents/{id}/conversations
+* POST /chat/{conversation_id}/message
+* GET /summaries/{agent_id}
+
+Endpoints should:
+
+* Validate input
+* Return structured responses
+* Not contain full logic yet (use service layer)
 
 ---
 
-### 11. Output Format
+### 4. Agent Logic Layer
 
-* Generate ALL files with full code
+Create a service that:
 
-* Include imports
+* Generates initial offers
+* Handles supplier messages
+* Produces counter-offers
+* Calls Gemini API (stubbed but wired)
 
-* Ensure project runs with:
+Do NOT fully implement intelligence—just scaffold:
 
+* Clear interfaces
+* Placeholder methods
+
+---
+
+### 5. Gemini Integration
+
+* Create a wrapper client
+* Include:
+
+  * prompt interface
+  * error handling
+  * timeout handling
+* Mock response fallback if API key not present
+
+---
+
+### 6. Authentication (Lightweight for now)
+
+* Token-based supplier access
+* Simple placeholder (no full auth system required yet)
+
+---
+
+### 7. Execution Requirements
+
+* Must run with:
   uvicorn app.main:app --reload
 
-* No placeholders like "implement this later"
+* No runtime errors
 
-* No pseudo-code
+* Include:
 
----
-
-### 12. Optional (if space allows)
-
-* Add simple logging utility
-* Add basic error handling
+  * requirements.txt or pyproject.toml
+  * minimal README with setup instructions
 
 ---
 
-## Goal
+## Output Expectations
 
-Produce a clean, minimal, scalable backend scaffold suitable for building an AI negotiation agent that interacts with multiple suppliers, stores chat history, and evaluates offers.
+1. First: a concise explanation of the system architecture in engineering terms
+2. Then: full project scaffold (files + code)
+3. Code must be:
 
-The code should be immediately runnable and extensible.
+   * Clean
+   * Typed
+   * Modular
+   * Immediately runnable
 
-Don't implement anything, we'll go step by step. Just create project structure we can work within. It should run without errors.
+Avoid overengineering, but follow best practices expected of a senior backend engineer.
+
+Do not skip wiring—everything should connect end-to-end, even if logic is stubbed.

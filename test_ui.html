@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Negotiation Agent UI - Test Flow</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 { color: #333; margin-bottom: 20px; }
+        h2 { color: #666; font-size: 18px; margin: 30px 0 15px; }
+        .card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+        .form-group { margin-bottom: 16px; }
+        label {
+            display: block;
+            font-weight: 500;
+            color: #444;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #4a90d9;
+        }
+        textarea { min-height: 100px; resize: vertical; }
+        .row { display: flex; gap: 16px; }
+        .row .form-group { flex: 1; }
+        button {
+            background: #4a90d9;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover { background: #3a7bc8; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        button.secondary { background: #6b7280; }
+        button.secondary:hover { background: #5a5f6e; }
+        .result {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+            font-family: monospace;
+            font-size: 13px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .error { color: #dc3545; background: #ffeef0; }
+        .success { color: #28a745; }
+        .step { display: none; }
+        .step.active { display: block; }
+        .nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .nav button {
+            padding: 10px 16px;
+            font-size: 14px;
+            background: #e5e5e5;
+            color: #333;
+        }
+        .nav button.active { background: #4a90d9; color: white; }
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-DRAFT { background: #fff3cd; color: #856404; }
+        .status-ACTIVE { background: #d4edda; color: #155724; }
+        .status-INVITED { background: #cce5ff; color: #004085; }
+        .status-ACCEPTED { background: #d4edda; color: #155724; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>+ Negotiation Agent Test UI</h1>
+    
+    <div class="nav">
+        <button onclick="showStep(1)" id="nav1" class="active">1. Create Buyer</button>
+        <button onclick="showStep(2)" id="nav2">2. Create Agent</button>
+        <button onclick="showStep(3)" id="nav3">3. Add Suppliers</button>
+        <button onclick="showStep(4)" id="nav4">4. Chat Flow</button>
+    </div>
+
+    <!-- Step 1: Create Buyer -->
+    <div class="step active" id="step1">
+        <div class="card">
+            <h2>Create Buyer</h2>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="buyerEmail" value="buyer@company.com">
+            </div>
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" id="buyerName" value="ABC Corporation">
+            </div>
+            <button onclick="createBuyer()">Create Buyer</button>
+            <div class="result" id="result1"></div>
+        </div>
+    </div>
+
+    <!-- Step 2: Create Agent -->
+    <div class="step" id="step2">
+        <div class="card">
+            <h2>Create New Agent</h2>
+            <div class="form-group">
+                <label>Agent Title *</label>
+                <input type="text" id="agentName" placeholder="e.g., Raw Material Procurement">
+            </div>
+            <div class="form-group">
+                <label>Domain *</label>
+                <select id="agentDomain">
+                    <option value="">Select domain...</option>
+                    <option value="Manufacturing">Manufacturing</option>
+                    <option value="Marketing">Marketing</option>
+                    <option value="IT">IT</option>
+                    <option value="Office Supplies">Office Supplies</option>
+                    <option value="Services">Services</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Subdomain (Optional)</label>
+                <input type="text" id="agentSubdomain" placeholder="e.g., Steel & Metals">
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <label>Base Price ($)</label>
+                    <input type="number" id="agentBasePrice" placeholder="e.g., 50000">
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <label>Min Price ($)</label>
+                    <input type="number" id="agentMinPrice" placeholder="e.g., 40000">
+                </div>
+                <div class="form-group">
+                    <label>Max Budget ($)</label>
+                    <input type="number" id="agentBudget" placeholder="e.g., 55000">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Requirement Description</label>
+                <textarea id="agentDescription" placeholder="Describe what you're looking to procure, key requirements, delivery timelines, etc."></textarea>
+            </div>
+            <button onclick="createAgent()">+ Create Agent</button>
+            <div class="result" id="result2"></div>
+        </div>
+    </div>
+
+    <!-- Step 3: Add Suppliers -->
+    <div class="step" id="step3">
+        <div class="card">
+            <h2>Add Suppliers</h2>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="supplierEmail" placeholder="supplier@company.com">
+            </div>
+            <div class="form-group">
+                <label>Company Name</label>
+                <input type="text" id="supplierCompany" placeholder="Company Name">
+            </div>
+            <button onclick="addSupplier()">+ Add Supplier</button>
+            <button class="secondary" onclick="activateAgent()">Activate Agent</button>
+            <div class="result" id="result3"></div>
+        </div>
+        <div class="card">
+            <h2>Supplier List</h2>
+            <button class="secondary" onclick="listSuppliers()">Refresh List</button>
+            <div class="result" id="supplierList"></div>
+        </div>
+    </div>
+
+    <!-- Step 4: Chat -->
+    <div class="step" id="step4">
+        <div class="card">
+            <h2>Start Negotiation</h2>
+            <div class="form-group">
+                <label>Select Supplier</label>
+                <select id="chatSupplier"></select>
+            </div>
+            <div class="form-group">
+                <label>Select Conversation</label>
+                <select id="chatConversation">
+                    <option value="">Create New Conversation</option>
+                </select>
+            </div>
+            <button onclick="createConversation()">Create Conversation</button>
+        </div>
+        <div class="card">
+            <h2>Chat</h2>
+            <div id="chatMessages" style="max-height: 300px; overflow-y: auto; margin-bottom: 16px;"></div>
+            <div class="form-group">
+                <label>Message</label>
+                <textarea id="chatMessage" placeholder="Type your message..."></textarea>
+            </div>
+            <button onclick="sendMessage()">Send</button>
+            <div class="result" id="result4"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+const API = 'http://localhost:8004/api/v1';
+let buyerId = '';
+let agentId = '';
+let suppliers = [];
+let conversations = [];
+
+function showStep(n) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+    document.getElementById('step' + n).classList.add('active');
+    document.getElementById('nav' + n).classList.add('active');
+}
+
+function showResult(id, data, isError = false) {
+    const el = document.getElementById('result' + id);
+    if (isError) {
+        el.className = 'result error';
+    } else {
+        el.className = 'result';
+    }
+    el.textContent = JSON.stringify(data, null, 2);
+}
+
+async function createBuyer() {
+    try {
+        const res = await fetch(API + '/buyers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: document.getElementById('buyerEmail').value,
+                name: document.getElementById('buyerName').value
+            })
+        });
+        const data = await res.json();
+        buyerId = data.id;
+        showResult(1, data);
+        document.getElementById('result1').classList.add('success');
+    } catch (e) {
+        showResult(1, { error: e.message }, true);
+    }
+}
+
+async function createAgent() {
+    if (!buyerId) {
+        showResult(2, { error: 'Create buyer first' }, true);
+        return;
+    }
+    try {
+        const res = await fetch(API + '/agents', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                buyer_id: buyerId,
+                name: document.getElementById('agentName').value,
+                domain: document.getElementById('agentDomain').value,
+                subdomain: document.getElementById('agentSubdomain').value || null,
+                description: document.getElementById('agentDescription').value || null,
+                base_price: parseFloat(document.getElementById('agentBasePrice').value) || 0,
+                min_price: parseFloat(document.getElementById('agentMinPrice').value) || 0,
+                budget: parseFloat(document.getElementById('agentBudget').value) || 0
+            })
+        });
+        const data = await res.json();
+        agentId = data.id;
+        showResult(2, data);
+    } catch (e) {
+        showResult(2, { error: e.message }, true);
+    }
+}
+
+async function addSupplier() {
+    if (!agentId) return showResult(3, { error: 'Create agent first' }, true);
+    try {
+        const res = await fetch(API + '/agents/' + agentId + '/suppliers', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                email: document.getElementById('supplierEmail').value,
+                company_name: document.getElementById('supplierCompany').value || null
+            })
+        });
+        const data = await res.json();
+        showResult(3, data);
+        listSuppliers();
+    } catch (e) {
+        showResult(3, { error: e.message }, true);
+    }
+}
+
+async function activateAgent() {
+    if (!agentId) return;
+    try {
+        const res = await fetch(API + '/agents/' + agentId + '/activate', { method: 'POST' });
+        const data = await res.json();
+        showResult(3, data);
+    } catch (e) {
+        showResult(3, { error: e.message }, true);
+    }
+}
+
+async function listSuppliers() {
+    if (!agentId) return;
+    try {
+        const res = await fetch(API + '/agents/' + agentId + '/suppliers');
+        suppliers = await res.json();
+        document.getElementById('supplierList').textContent = JSON.stringify(suppliers, null, 2);
+        
+        // Populate dropdown
+        const sel = document.getElementById('chatSupplier');
+        sel.innerHTML = suppliers.map(s => `<option value="${s.id}">${s.company_name || s.email}</option>`).join('');
+    } catch (e) {
+        document.getElementById('supplierList').textContent = e.message;
+    }
+}
+
+async function createConversation() {
+    if (!agentId) return;
+    const supplierId = document.getElementById('chatSupplier').value;
+    try {
+        const res = await fetch(API + '/agents/' + agentId + '/conversations?supplier_id=' + supplierId, {
+            method: 'POST'
+        });
+        const data = await res.json();
+        
+        // Refresh conversations
+        const res2 = await fetch(API + '/agents/' + agentId + '/conversations');
+        conversations = await res2.json();
+        
+        const sel = document.getElementById('chatConversation');
+        sel.innerHTML = '<option value="">Create New Conversation</option>' + 
+            conversations.map(c => `<option value="${c.id}">${c.id.slice(0,8)}... (${c.status})</option>`).join('');
+        
+        showResult(4, data);
+    } catch (e) {
+        showResult(4, { error: e.message }, true);
+    }
+}
+
+async function sendMessage() {
+    const convId = document.getElementById('chatConversation').value;
+    if (!convId) return showResult(4, { error: 'Select or create conversation first' }, true);
+    
+    const supplier = suppliers.find(s => s.id === document.getElementById('chatSupplier').value);
+    if (!supplier) return showResult(4, { error: 'Select supplier' }, true);
+    
+    try {
+        const res = await fetch(API + '/chat/' + convId + '/message', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                message: document.getElementById('chatMessage').value,
+                token: supplier.access_token
+            })
+        });
+        const data = await res.json();
+        showResult(4, data);
+        
+        // Load conversation messages
+        const res2 = await fetch(API + '/conversations/' + convId);
+        const conv = await res2.json();
+        
+        document.getElementById('chatMessages').innerHTML = conv.messages?.map(m => 
+            `<div style="padding: 8px; margin: 4px 0; background: ${m.role === 'SUPPLIER' ? '#e3f2fd' : '#f5f5f5'}; border-radius: 8px;">
+                <strong>${m.role}:</strong> ${m.content}
+            </div>`
+        ).join('') || 'No messages';
+    } catch (e) {
+        showResult(4, { error: e.message }, true);
+    }
+}
+</script>
+</body>
+</html>
