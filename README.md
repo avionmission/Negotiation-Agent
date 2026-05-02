@@ -25,6 +25,38 @@ DEBUG=true
 uvicorn app.main:app --reload
 ```
 
+## Database (SQLite)
+
+```bash
+# Enter database
+sqlite3 negotiation.db
+
+# List tables
+.tables
+
+# Show table schema
+.schema agents
+
+# Query data
+SELECT * FROM agents;
+SELECT * FROM suppliers;
+SELECT * FROM conversations;
+
+# Query with JOIN
+SELECT c.id, a.name, s.company_name, c.status 
+FROM conversations c
+JOIN agents a ON c.agent_id = a.id
+JOIN suppliers s ON c.supplier_id = s.id;
+
+# Exit
+.exit
+```
+
+**Quick query (one-liner):**
+```bash
+sqlite3 negotiation.db "SELECT name, domain, budget, status FROM agents;"
+```
+
 ## API Docs
 
 - Swagger UI: http://127.0.0.1:8000/docs
