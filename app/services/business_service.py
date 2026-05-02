@@ -32,10 +32,13 @@ from app.schemas.schemas import (
 
 
 def create_buyer(db: Session, data: BuyerCreate) -> Buyer:
+    now = datetime.utcnow()
     buyer = Buyer(
         id=str(uuid.uuid4()),
         email=data.email,
         name=data.name,
+        access_token=secrets.token_urlsafe(32),
+        token_expiry=now + timedelta(days=7),
     )
     db.add(buyer)
     db.commit()
@@ -49,6 +52,32 @@ def get_buyer(db: Session, buyer_id: str) -> Buyer | None:
 
 def get_buyer_by_email(db: Session, email: str) -> Buyer | None:
     return db.query(Buyer).filter(Buyer.email == email).first()
+
+
+def login_buyer(db: Session, email: str) -> Buyer | None:
+    buyer = get_buyer_by_email(db, email)
+    if not buyer:
+        return None
+
+    now = datetime.utcnow()
+    if not buyer.access_token or not buyer.token_expiry or buyer.token_expiry < now:
+        buyer.access_token = secrets.token_urlsafe(32)
+        buyer.token_expiry = now + timedelta(days=7)
+        db.commit()
+        db.refresh(buyer)
+
+    return buyer
+
+
+def login_supplier(db: Session, email: str, agent_id: str) -> Supplier | None:
+    supplier = (
+        db.query(Supplier)
+        .filter(Supplier.email == email, Supplier.agent_id == agent_id)
+        .first()
+    )
+    if not supplier:
+        return None
+    return supplier
 
 
 def create_agent(db: Session, data: AgentCreate) -> Agent:

@@ -52,6 +52,10 @@ class Buyer(Base):
     )
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     name: Mapped[str] = mapped_column(String(255))
+    access_token: Mapped[str | None] = mapped_column(
+        String(64), unique=True, index=True, default=None
+    )
+    token_expiry: Mapped[datetime | None] = mapped_column(DateTime, default=None)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, default=datetime.utcnow, onupdate=datetime.utcnow

@@ -29,6 +29,27 @@ class BuyerResponse(BuyerBase):
     model_config = ConfigDict(from_attributes=True)
 
 
+class BuyerLoginRequest(BaseModel):
+    email: EmailStr
+
+
+class BuyerLoginResponse(BaseModel):
+    buyer_id: str
+    access_token: str
+    token_expiry: datetime
+
+
+class SupplierLoginRequest(BaseModel):
+    email: EmailStr
+    agent_id: str
+
+
+class SupplierLoginResponse(BaseModel):
+    supplier_id: str
+    access_token: str
+    token_expiry: datetime | None
+
+
 class AgentBase(BaseModel):
     name: str = Field(min_length=1, max_length=255)
     domain: str = Field(min_length=1, max_length=100)

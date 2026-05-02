@@ -7,6 +7,8 @@ from app.schemas.schemas import (
     AgentResponse,
     AgentUpdate,
     BuyerCreate,
+    BuyerLoginRequest,
+    BuyerLoginResponse,
     BuyerResponse,
     ChatRequest,
     ChatResponse,
@@ -20,6 +22,8 @@ from app.schemas.schemas import (
     MessageCreate,
     MessageResponse,
     SupplierCreate,
+    SupplierLoginRequest,
+    SupplierLoginResponse,
     SupplierResponse,
 )
 from app.services import business_service, agent_service
@@ -46,6 +50,46 @@ def create_buyer(data: BuyerCreate, db: Session = Depends(get_db)):
             detail="Buyer with this email already exists",
         )
     return business_service.create_buyer(db, data)
+
+
+@router.post("/buyers/login", response_model=BuyerLoginResponse)
+def buyer_login(data: BuyerLoginRequest, db: Session = Depends(get_db)):
+    buyer = business_service.login_buyer(db, data.email)
+    if not buyer:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Buyer not found",
+        )
+    if not buyer.access_token or not buyer.token_expiry:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to generate access token",
+        )
+    return BuyerLoginResponse(
+        buyer_id=buyer.id,
+        access_token=buyer.access_token,
+        token_expiry=buyer.token_expiry,
+    )
+
+
+@router.post("/suppliers/login", response_model=SupplierLoginResponse)
+def supplier_login(data: SupplierLoginRequest, db: Session = Depends(get_db)):
+    supplier = business_service.login_supplier(db, data.email, data.agent_id)
+    if not supplier:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Supplier not found for this agent",
+        )
+    if not supplier.access_token:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Supplier has no access token",
+        )
+    return SupplierLoginResponse(
+        supplier_id=supplier.id,
+        access_token=supplier.access_token,
+        token_expiry=supplier.token_expiry,
+    )
 
 
 @router.get("/buyers/{buyer_id}", response_model=BuyerResponse)
