@@ -1,0 +1,25 @@
+{
+  "name": "smart-deal-mail-system",
+  "version": "1.0.0",
+  "description": "OAuth2 Gmail API and Google Calendar scheduling system with Node.js, Express, and vanilla JavaScript.",
+  "main": "server.js",
+  "scripts": {
+    "auth": "node getRefreshToken.js",
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "express",
+    "googleapis",
+    "calendar",
+    "gmail",
+    "email"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "googleapis": "^171.4.0"
+  }
+}

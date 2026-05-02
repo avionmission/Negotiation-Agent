@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Deal Google API System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="panel">
+        <header class="hero">
+          <p class="eyebrow">Google OAuth Automation</p>
+          <h1>Smart Deal Mail System</h1>
+          <p class="subtitle">Gmail API + Calendar Scheduling</p>
+        </header>
+
+        <div class="content-grid">
+          <section class="action-block">
+            <div>
+              <p class="section-kicker">Manual Trigger</p>
+              <h2>Seller Mail</h2>
+            </div>
+            <form id="testMailForm" class="form-stack">
+              <label for="recipientEmail">Seller Email</label>
+              <input
+                id="recipientEmail"
+                name="recipientEmail"
+                type="email"
+                placeholder="seller@example.com"
+                autocomplete="email"
+                required
+              />
+
+              <label for="agentLink">Negotiation Link</label>
+              <input
+                id="agentLink"
+                name="agentLink"
+                type="url"
+                placeholder="https://example.com/negotiation-room"
+                inputmode="url"
+                required
+              />
+
+              <button id="sendTestButton" type="submit">Send Seller Mail</button>
+            </form>
+          </section>
+
+          <section class="action-block">
+            <div>
+              <p class="section-kicker">Deal Workflow</p>
+              <h2>Negotiation</h2>
+            </div>
+            <form id="negotiationForm" class="form-stack">
+              <label for="sellerEmail">Seller Email</label>
+              <input
+                id="sellerEmail"
+                name="sellerEmail"
+                type="email"
+                placeholder="seller@example.com"
+                autocomplete="email"
+                required
+              />
+
+              <div class="time-grid">
+                <div>
+                  <label for="meetingDate">Meeting Date</label>
+                  <input id="meetingDate" name="meetingDate" type="date" required />
+                </div>
+
+                <div>
+                  <label for="meetingStartTime">Start Time</label>
+                  <input id="meetingStartTime" name="meetingStartTime" type="time" required />
+                </div>
+
+                <div>
+                  <label for="meetingEndTime">End Time</label>
+                  <input id="meetingEndTime" name="meetingEndTime" type="time" required />
+                </div>
+              </div>
+
+              <div class="button-row">
+                <button id="endNegotiationButton" type="submit" data-action="end">
+                  End Negotiation
+                </button>
+                <button id="scheduleMeetingButton" class="button-secondary" type="submit" data-action="schedule">
+                  Schedule Meeting
+                </button>
+              </div>
+            </form>
+          </section>
+        </div>
+
+        <section id="statusBox" class="status-box" aria-live="polite">
+          Ready to send Gmail API notifications and schedule meetings.
+        </section>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
