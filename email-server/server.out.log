@@ -1,0 +1,21 @@
+Smart Deal Google API System running at http://localhost:3000
+Google OAuth2 access token refreshed.
+Gmail API email sent to test@example.com: 19de97961fb1b928
+Negotiation link email sent to test@example.com: 19de97961fb1b928
+Google Calendar meeting created: jk6vu8rjvgi5pu4lofufiule0s
+Gmail API email sent to devil7617712@gmail.com: 19de979bfabfa9de
+Gmail API email sent to seller@test.com: 19de979be37c27f9
+Meeting scheduled for devil7617712@gmail.com and seller@test.com: jk6vu8rjvgi5pu4lofufiule0s
+Gmail API email sent to avionmission@gmail.com: 19de979f5d3ae92f
+Negotiation link email sent to avionmission@gmail.com: 19de979f5d3ae92f
+Gmail API email sent to seller@test.com: 19de97a18fb016cb
+Gmail API email sent to buyer@test.com: 19de97a184d10dbd
+Negotiation completion emails sent to buyer@test.com, seller@test.com.
+Google Calendar meeting created: 5th3vq7r6m3nsl4uvd67l5vn18
+Gmail API email sent to avionmission@gmail.com: 19de97c9067dec86
+Gmail API email sent to devil7617712@gmail.com: 19de97c916679367
+Meeting scheduled for devil7617712@gmail.com and avionmission@gmail.com: 5th3vq7r6m3nsl4uvd67l5vn18
+Gmail API email sent to newsupplier@test.com: 19de98b40ec662e3
+Negotiation link email sent to newsupplier@test.com: 19de98b40ec662e3
+Gmail API email sent to avionmission@gmail.com: 19de999b0fefb651
+Negotiation link email sent to avionmission@gmail.com: 19de999b0fefb651

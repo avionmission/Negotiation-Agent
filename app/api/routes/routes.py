@@ -1,6 +1,8 @@
+import requests
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.db.session import get_db
 from app.schemas.schemas import (
     AgentCreate,
@@ -199,6 +201,21 @@ def add_supplier(agent_id: str, data: SupplierCreate, db: Session = Depends(get_
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Failed to add supplier"
         )
+
+    settings = get_settings()
+    negotiation_link = (
+        f"{settings.BASE_URL}/chat?agent_id={agent_id}&token={supplier.access_token}"
+    )
+
+    try:
+        requests.post(
+            f"{settings.EMAIL_SERVER_URL}/send-mail",
+            json={"email": data.email, "agentLink": negotiation_link},
+            timeout=10,
+        )
+    except Exception:
+        pass
+
     return supplier
 
 

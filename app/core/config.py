@@ -20,6 +20,9 @@ class Settings(BaseSettings):
 
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7
 
+    BASE_URL: str = "http://localhost:8000"
+    EMAIL_SERVER_URL: str = "http://localhost:3000"
+
 
 @lru_cache
 def get_settings() -> Settings:
