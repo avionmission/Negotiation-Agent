@@ -15,7 +15,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///./negotiation.db"
 
     GEMINI_API_KEY: str | None = None
-    GEMINI_MODEL: str = "gemini-2.0-flash"
+    GEMINI_MODEL: str = "gemini-1.5-flash"
     GEMINI_TIMEOUT: int = 30
 
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7

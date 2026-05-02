@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supplier Portal | Negotiation Agent</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ff7b54;
+            --primary-glow: rgba(255, 123, 84, 0.3);
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Outfit', sans-serif; 
+            background: var(--bg); 
+            color: var(--text);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-image: radial-gradient(circle at 10% 20%, rgba(255, 123, 84, 0.05) 0%, transparent 40%),
+                              radial-gradient(circle at 90% 80%, rgba(56, 189, 248, 0.05) 0%, transparent 40%);
+        }
+
+        header {
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 600;
+            background: linear-gradient(90deg, var(--primary), #38bdf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .main-container {
+            flex: 1;
+            display: flex;
+            padding: 20px;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Sidebar Info */
+        .sidebar {
+            width: 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            background: rgba(56, 189, 248, 0.2);
+            color: #38bdf8;
+            margin-bottom: 10px;
+        }
+
+        /* Chat Area */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--glass-border) transparent;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 18px;
+            border-radius: 16px;
+            font-size: 15px;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .message.agent {
+            align-self: flex-start;
+            background: var(--card-bg);
+            border-bottom-left-radius: 4px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background: var(--primary);
+            color: white;
+            border-bottom-right-radius: 4px;
+            box-shadow: 0 4px 15px var(--primary-glow);
+        }
+
+        .input-area {
+            padding: 20px;
+            display: flex;
+            gap: 12px;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid var(--glass-border);
+        }
+
+        input {
+            flex: 1;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 14px 20px;
+            color: white;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            background: rgba(255,255,255,0.1);
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px var(--primary-glow);
+        }
+
+        /* Token Overlay */
+        #auth-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .auth-card {
+            width: 400px;
+            text-align: center;
+        }
+
+        .auth-card h2 { margin-bottom: 20px; }
+        .auth-card p { color: var(--text-muted); margin-bottom: 30px; }
+    </style>
+</head>
+<body>
+
+    <div id="auth-overlay">
+        <div class="glass-card auth-card">
+            <div class="logo" style="margin-bottom: 20px;">Supplier Portal</div>
+            <h2>Identity Verification</h2>
+            <p>Please enter your access token to join the negotiation.</p>
+            <input type="text" id="token-input" placeholder="Paste your token here..." style="margin-bottom: 20px; text-align: center;">
+            <input type="text" id="conv-input" placeholder="Conversation ID" style="margin-bottom: 20px; text-align: center;">
+            <button onclick="startSession()" style="width: 100%; padding: 14px;">Access Negotiation</button>
+        </div>
+    </div>
+
+    <header>
+        <div class="logo">Negotiation Agent</div>
+        <div id="connection-status" style="color: #4ade80; font-size: 13px;">● System Active</div>
+    </header>
+
+    <div class="main-container">
+        <div class="sidebar">
+            <div class="glass-card">
+                <div class="status-badge" id="deal-status">Negotiating</div>
+                <h3 id="proj-name">Project Load...</h3>
+                <p id="proj-desc" style="font-size: 14px; color: var(--text-muted); margin-top: 10px;">
+                    Enter your token to see requirements.
+                </p>
+            </div>
+            
+            <div class="glass-card">
+                <div style="font-size: 13px; color: var(--text-muted);">Current Target Price</div>
+                <div style="font-size: 32px; font-weight: 600; color: var(--primary); margin: 5px 0;" id="target-price">$0.00</div>
+                <div style="font-size: 12px; color: var(--text-muted);">Negotiation Round: <span id="round-num">1</span></div>
+            </div>
+        </div>
+
+        <div class="chat-container glass-card" style="padding: 0;">
+            <div class="messages" id="chat-messages">
+                <div class="message agent">
+                    Hello! I am the procurement agent for this project. Please let me know your best offer so we can proceed.
+                </div>
+            </div>
+            
+            <div class="input-area">
+                <input type="text" id="msg-input" placeholder="Type your counter offer or message...">
+                <button onclick="sendMessage()">Send Offer</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        let accessToken = '';
+        let conversationId = '';
+
+        async function startSession() {
+            accessToken = document.getElementById('token-input').value;
+            conversationId = document.getElementById('conv-input').value;
+            if (accessToken && conversationId) {
+                document.getElementById('auth-overlay').style.display = 'none';
+                loadProjectDetails();
+            }
+        }
+
+        async function loadProjectDetails() {
+            try {
+                const response = await fetch(`${API_BASE}/agents/details_by_conversation/${conversationId}?token=${accessToken}`);
+                const data = await response.json();
+                if (response.ok) {
+                    document.getElementById('proj-name').innerText = data.name;
+                    document.getElementById('proj-desc').innerText = data.description;
+                    document.getElementById('target-price').innerText = `$${data.base_price.toLocaleString()}`;
+                }
+            } catch (err) {
+                console.error('Failed to load project details:', err);
+            }
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('msg-input');
+            const text = input.value;
+            if (!text) return;
+
+            // Add user message to UI
+            appendMessage('user', text);
+            input.value = '';
+
+            try {
+                const response = await fetch(`${API_BASE}/chat/${conversationId}/message`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        token: accessToken,
+                        message: text
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    appendMessage('agent', data.response);
+                    updateStats(data);
+                } else {
+                    appendMessage('agent', 'Error: ' + data.detail);
+                }
+            } catch (err) {
+                appendMessage('agent', 'System Error: ' + err.message);
+            }
+        }
+
+        function appendMessage(role, text) {
+            const container = document.getElementById('chat-messages');
+            const div = document.createElement('div');
+            div.className = `message ${role}`;
+            div.innerText = text;
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function updateStats(data) {
+            if (data.current_offer) {
+                document.getElementById('target-price').innerText = `$${data.current_offer.toLocaleString()}`;
+            }
+            if (data.round) {
+                document.getElementById('round-num').innerText = data.round;
+            }
+            if (data.status) {
+                document.getElementById('deal-status').innerText = data.status;
+            }
+        }
+    </script>
+</body>
+</html>

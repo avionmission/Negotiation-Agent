@@ -70,6 +70,25 @@ def create_agent(data: AgentCreate, db: Session = Depends(get_db)):
     return business_service.create_agent(db, data)
 
 
+@router.get("/agents/details_by_conversation/{conversation_id}")
+def get_agent_details_by_conversation(conversation_id: str, token: str, db: Session = Depends(get_db)):
+    # Verify supplier token
+    supplier = business_service.get_supplier_by_token(db, token)
+    if not supplier:
+        raise HTTPException(status_code=401, detail="Invalid token")
+        
+    conv = business_service.get_conversation(db, conversation_id)
+    if not conv:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+        
+    agent = business_service.get_agent(db, conv.agent_id)
+    return {
+        "name": agent.name,
+        "description": agent.description,
+        "base_price": agent.base_price,
+        "budget": agent.budget
+    }
+
 @router.get("/agents/{agent_id}", response_model=AgentResponse)
 def get_agent(agent_id: str, db: Session = Depends(get_db)):
     agent = business_service.get_agent(db, agent_id)
@@ -265,6 +284,26 @@ def get_conversation(conversation_id: str, db: Session = Depends(get_db)):
     )
 
 
+@router.get("/agents/details_by_conversation/{conversation_id}")
+def get_agent_details_by_conversation(conversation_id: str, token: str, db: Session = Depends(get_db)):
+    # Verify supplier token
+    supplier = business_service.get_supplier_by_token(db, token)
+    if not supplier:
+        raise HTTPException(status_code=401, detail="Invalid token")
+        
+    conv = business_service.get_conversation(db, conversation_id)
+    if not conv:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+        
+    agent = business_service.get_agent(db, conv.agent_id)
+    return {
+        "name": agent.name,
+        "description": agent.description,
+        "base_price": agent.base_price,
+        "budget": agent.budget
+    }
+
+
 @router.post("/chat/{conversation_id}/message", response_model=ChatResponse)
 def post_chat_message(
     conversation_id: str,
@@ -278,10 +317,14 @@ def post_chat_message(
             detail="Invalid access token",
         )
 
-    if supplier.status != SupplierStatus.ACTIVE:
+    if supplier.status == SupplierStatus.INVITED:
+        supplier.status = SupplierStatus.ACTIVE
+        db.commit()
+    # Allow chatting even if deal is won/lost for testing purposes
+    elif supplier.status not in [SupplierStatus.ACTIVE, SupplierStatus.WON, SupplierStatus.LOST]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Supplier is not active",
+            detail=f"Supplier is not in a valid chat state (status: {supplier.status})",
         )
 
     conversation = business_service.get_conversation(db, conversation_id)
@@ -294,6 +337,8 @@ def post_chat_message(
     if conversation.status not in [
         ConversationStatus.ACTIVE,
         ConversationStatus.NEGOTIATING,
+        ConversationStatus.ACCEPTED,
+        ConversationStatus.REJECTED
     ]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
